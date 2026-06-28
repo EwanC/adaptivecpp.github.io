@@ -1,7 +1,7 @@
 ---
 layout: single
 title:  "Buffer vs USM: Which Model to Choose?"
-date:   2026-06-28 20:00:00 +0100
+date:   2026-06-28 18:00:00 +0100
 categories: hipsycl adaptivecpp sycl buffer usm
 ---
 
