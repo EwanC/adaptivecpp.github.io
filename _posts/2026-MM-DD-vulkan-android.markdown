@@ -6,8 +6,6 @@ categories: hipsycl adaptivecpp sycl vulkan android
 author: Ewan Crawford
 ---
 
-# Introduction
-
 SYCL's promise is performance portability: write modern C++ once and execute across many different accelerators. But that
 promise only goes as far as the available backends. While desktop and HPC platforms capitalize on established OpenCL,
 CUDA, HIP, and Level Zero backends for accelerating SYCL applications on the GPU, mobile isn't a domain commonly associated
@@ -17,7 +15,7 @@ the SYCL performance portability story.
 While projects such as [Sylkan](https://dl.acm.org/doi/10.1145/3456669.3456683) have demonstrated that SYCL over Vulkan is
 feasible, the space has remained relatively unexplored in terms of feature completeness, Android support, and integration
 with the wider SYCL ecosystem. OpenCL has had more success in this area with projects such as
-[clvk](https://github.com/kpet/clvk), [pocl](https://github.com/pocl/pocl), and [ANCLE](https://github.com/google/angle)
+[clvk](https://github.com/kpet/clvk), [pocl](https://github.com/pocl/pocl), and [ANGLE](https://github.com/google/angle)
 successfully layering its compute API over Vulkan.
 
 There are two halves of bringing up a backend target in SYCL, the runtime and the compiler. This post gives an overview
@@ -40,7 +38,7 @@ and [Buffer Device Address](https://docs.vulkan.org/refpages/latest/refpages/sou
 To elaborate on why those extensions are necessary building blocks of our SYCL implementations. Each `sycl::queue::submit()`
 call becomes a `vkCommandBuffer` submission with a single command, which is synchronized entirely using a timeline semaphores.
 The timeline semaphore is owned by a SYCL queue with a value that is initialized to zero and incremented by each command
-submission. This allows the same synchronization primitive to be reused many time without resetting, unlike a `vkFence`, and
+submission. This allows the same synchronization primitive to be reused many times without resetting, unlike a `vkFence`, and
 each command to be uniquely identified by the pair of queue handle and timeline value. What's more a timeline semaphore can
 also be signaled from host which is useful for reasons we'll discuss in a moment.
 
@@ -75,7 +73,7 @@ USM where a pointer can be dereferenced on host or device.
 
 Vulkan asynchronous commands operate on `VkBuffer` objects, but these themselves are backed by `VkDeviceMemory` objects
 that must be allocated then bound to a `VkBuffer`. To implement USM we can't give the user a device dereferencable
-pointer to `VkDeviceMemory` because Vulkan only let's the object be mapped/unmapped to a host pointer. Instead the
+pointer to `VkDeviceMemory` because Vulkan only lets the object be mapped/unmapped to a host pointer. Instead the
 solution was to implement device USM as a `VkBuffer` backed by `VkDeviceMemory`, and use the Buffer Device Address API
 [vkGetBufferDeviceAddress()](https://docs.vulkan.org/refpages/latest/refpages/source/vkGetBufferDeviceAddress.html) to
 get a 64-bit address to that can be returned to the user for use in kernels.
@@ -106,8 +104,8 @@ SSCP compilation flow. This runtime JIT compilation flow allows backends to lowe
 appropriate tooling for that backend. So OpenCL/Level-Zero backends can call into the LLVM-SPIRV translator to lower
 LLVM-IR to kernel capability SPIR-V, and the Vulkan backend can call into `clspv` in a similar way.
 
-clspv isn't used to getting input IR from a frontend that's C++ single source however, rather
-than C, so there is a significant amount of work that needs to be performed via LLVM passes to transform that IR
+clspv typically expects OpenCL-C input rather than C++ single-source IR,
+so there is a significant amount of work that needs to be performed via LLVM passes to transform that IR
 into a form that's consumable by clspv.
 
 The biggest challenge here is generic pointers. In the OpenCL C 1.2 language clspv is used to consuming, pointers
@@ -136,14 +134,17 @@ SPIR-V capability support to run any kernel are:
 
 # Using the AdaptiveCpp Vulkan Backend
 
-When it comes to using the Vulkan AdaptiveCpp backend, thanks for the proliferation of Vulkan drivers
-there are many platforms which the backend can be tested on. On AdaptiveCpp GitHub CI all of Linux, Windows, and MacOS
-are testing using Mesa llvmpipe for Linux & Windows, and MoltenVK for MacOS.
+When it comes to using the Vulkan AdaptiveCpp backend, thanks to the proliferation of Vulkan drivers
+there are many platforms on which the backend can be tested. On AdaptiveCpp's GitHub CI, Linux, Windows, and macOS
+are tested using Mesa llvmpipe for Linux & Windows, and MoltenVK for macOS.
 
 In this article we'll only cover how to build and use the backend on Ubuntu using a native build flow.
 Android operating systems require a more complex build process using the Android NDK to
-cross compile AdaptiveCpp and other dependencies. You can find the in-depth instructions for how to do that
-[here](todo).
+cross compile AdaptiveCpp and other dependencies. Android cross-compilation support is currently
+in review at [AdaptiveCpp#2158](https://github.com/AdaptiveCpp/AdaptiveCpp/pull/2158); in-depth
+instructions will be linked here once that work is merged.
+
+> **Note**: the Android build path described in that PR is not yet part of an AdaptiveCpp release.
 
 ## Building AdaptiveCpp With Vulkan Backend Enabled
 
@@ -166,8 +167,8 @@ $ source 1.4.357.0/setup-env.sh
 ### Vulkan Driver
 
 The Vulkan SDK comes with a `vulkaninfo` tool for printing the Vulkan drivers on your system,
-at least is required to use as a SYCL backend device. If don't have any installed then the
-easiest way to reliably get a driver to to install the Mesa drivers with
+at least one is required to use as a SYCL backend device. If you don't have any installed then the
+easiest way to reliably get a driver is to install the Mesa drivers with
 `apt install mesa-vulkan-drivers`. This will provide at least the llvmpipe CPU Vulkan driver
 which provides all the necessary capabilities for SYCL.
 
@@ -193,7 +194,7 @@ GPU0:
 The exact commit of clspv should be checked in AdaptiveCpp CI and `doc/install-vulkan.md`.
 
 ```sh
-$ git clone github.com/google/clspv
+$ git clone https://github.com/google/clspv
 $ cd clspv
 $ python3 utils/fetch_sources.py
 $ mkdir build && cd build
@@ -230,10 +231,9 @@ Loaded backend 1: Vulkan
   Found device: llvmpipe (LLVM 20.1.8, 256 bits)
 ```
 
-## Compiling and running AdaptiveCpp applications With Vulkan Backend
+## Compiling and running AdaptiveCpp applications with Vulkan backend
 
 ```cpp
-$ cat sycl_test.cpp
 int main() {
     sycl::device d{sycl::default_selector{}};
     sycl::queue q(d, sycl::property::queue::in_order());
@@ -262,7 +262,9 @@ int main() {
     sycl::free(devicePtr, q);
     return 0;
 }
+```
 
+```sh
 $ $ACPP_BIN_DIR/acpp sycl_test.cpp -o sycl_test
 $ ACPP_VISIBILITY_MASK=vk:llvmpipe ./sycl_test
 Default-selected queue runs on device: llvmpipe (LLVM 20.1.8, 256 bits)
@@ -278,37 +280,36 @@ by name, for example here we ask for llvmpipe with `ACPP_VISIBILITY_MASK=vk:llvm
 
 # Android Benchmarks
 
-Returning the Android platform, I cross compiled the nbody and mandlebrot benchmarks from
-[HecBench](https://github.com/ORNL/HeCBench) to illustrate the benefits of the SYCL acceleration
-enabled by Adaptive Android support.
+Returning to the Android platform, we cross compiled the nbody and mandelbrot benchmarks from
+[HeCBench](https://github.com/ORNL/HeCBench) to illustrate the benefits of the SYCL acceleration
+enabled by AdaptiveCpp Android support.
 
-HecBench provides multiple source code variants of each benchmark for different backends.
-So there a OpenMP variants at [nbody-omp](https://github.com/ORNL/HeCBench/tree/master/src/nbody-omp)
-& [mandlebrot-omp](https://github.com/ORNL/HeCBench/tree/master/src/mandlebrot-omp), and
-SYCL variants at [nbody-sycl](https://github.com/ORNL/HeCBench/tree/master/src/nbody-sycl)
-[mandlebrot-sycl](https://github.com/ORNL/HeCBench/tree/master/src/mandlebrot-sycl).
+HeCBench provides multiple source code variants of each benchmark for different backends.
+So there are OpenMP variants at [nbody-omp](https://github.com/ORNL/HeCBench/tree/master/src/nbody-omp)
+& [mandelbrot-omp](https://github.com/ORNL/HeCBench/tree/master/src/mandlebrot-omp), and
+SYCL variants at [nbody-sycl](https://github.com/ORNL/HeCBench/tree/master/src/nbody-sycl) &
+[mandelbrot-sycl](https://github.com/ORNL/HeCBench/tree/master/src/mandlebrot-sycl).
 
 Our cross compiled AdaptiveCpp enables both the OpenMP CPU and Vulkan backends, so we have
-two SYCL runs of the SYCL HecBench source to compare against the OpenMP implementation.
+two SYCL runs of the SYCL HeCBench source to compare against the OpenMP implementation.
 
-On an Adreno 750 Qualcomm GPU I observed the following results
+On a Qualcomm Adreno 750 GPU we observed the following results
 
-| Benchmark         | OMP[1] | SYCL OMP[2] |  SYCL VK[3] |
-|------------------ | ------ | ----------- | ----------- |
-|`./nbody 10000 10` | 2.49s  | 0.647417s   | TODO        |
-|`./mandlebrot 100` | 249ms  | 86ms        | TODO        |
+| Benchmark           | Native OMP [1] | SYCL OMP [2] | SYCL Vulkan [3] |
+|-------------------- | -------------- | ------------ | --------------- |
+|`./nbody 10000 10`   | 2.49s          | 0.647417s    | TODO            |
+|`./mandelbrot 100`   | 249ms          | 86ms         | TODO            |
 
-Where we can see that with the SYCL OpenMP backend we get an improvement over the straight OpenMP, and
-with GPU offloading through the SYCL Vulkan backend a further improvement still.
+*[1] OpenMP executable compiled directly with the NDK compiler. [2] SYCL kernel targeting AdaptiveCpp's OpenMP backend. [3] SYCL kernel targeting the Vulkan backend on the Adreno GPU.*
 
 # Conclusion
 
 To conclude we've introduced AdaptiveCpp's support for SYCL over Vulkan, allowing SYCL to be a valid
 programming model on Android.
 
-There still still a lot of work to do however, which is tracked in the AdaptiveCpp GitHub issues
+There is still a lot of work to do however, which is tracked in the AdaptiveCpp GitHub issues
 under the [Vulkan label](https://github.com/AdaptiveCpp/AdaptiveCpp/issues?q=is%3Aissue%20state%3Aopen%20label%3Avulkan).
-This includes improving the code qualify by fixing bugs, in particular for Android when compiling the C++ single source
+This includes improving the code quality by fixing bugs, in particular for Android when compiling the C++ single source
 to LLVM-IR with a Aarch64 target rather than x86_64 results in different IR which is not as consumable by clspv
 without some extra transformations.
 
@@ -317,4 +318,4 @@ for the Vulkan backend but will enable the host application to integrate between
 backing SYCL.
 
 Longer term once the project is more mature the fundamental limitations of the SYCL-on-Vulkan can be brought to the
-relevant SYCL/Vulkan/SPRI-V Khronos working groups to enable explicit specification around support.
+relevant SYCL/Vulkan/SPIR-V Khronos working groups to enable explicit specification around support.
