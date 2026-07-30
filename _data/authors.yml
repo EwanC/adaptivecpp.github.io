@@ -9,3 +9,12 @@ Aksel Alpay:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/illuhad"
+
+Ewan Crawford:
+  name   : "Ewan Crawford"
+  avatar : "/assets/images/avatar-ewan.png"
+  bio    : "Khronos Compute Standards @ StreamHPC, ex-Codeplayer"
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/EwanC"
