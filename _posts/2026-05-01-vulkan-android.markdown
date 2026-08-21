@@ -1,7 +1,7 @@
 ---
 layout: single
 title:  "Bringing SYCL to Android: A Vulkan backend for portable GPU compute"
-date:   2026-MM-DD HH:00:00 +0100
+date:   2026-05-01 09:00:00 +0100
 categories: hipsycl adaptivecpp sycl vulkan android
 author: Ewan Crawford
 ---
