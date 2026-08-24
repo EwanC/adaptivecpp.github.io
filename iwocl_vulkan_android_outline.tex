@@ -1,0 +1,115 @@
+\documentclass[sigconf]{acmart}
+
+% Optional for workshop/short-paper drafts
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
+
+\title{Bringing SYCL to Android via Vulkan: Design, Compilation, and Early Performance Results}
+
+\author{First Author}
+\affiliation{%
+  \institution{Institution}
+  \city{City}
+  \country{Country}
+}
+\email{author@example.com}
+
+\begin{document}
+
+\begin{abstract}
+% Stub: 4--6 sentence summary of motivation, approach, and headline results.
+\textit{Stub abstract content.}
+\end{abstract}
+
+\keywords{SYCL, Vulkan, Android, performance portability, heterogeneous computing}
+
+\maketitle
+
+\section{Introduction}
+\subsection{Motivation and Problem Statement}
+\textit{Stub content.}
+
+\subsection{Contributions}
+\textit{Stub content.}
+
+\section{Background and Related Work}
+\subsection{SYCL Backends and Performance Portability}
+\textit{Stub content.}
+
+\subsection{Vulkan for GPGPU and Mobile Compute}
+\textit{Stub content.}
+
+\subsection{Prior SYCL/OpenCL-on-Vulkan Efforts}
+\textit{Stub content.}
+
+\section{AdaptiveCpp Vulkan Backend Overview}
+\subsection{Runtime Mapping of SYCL Concepts to Vulkan}
+\textit{Stub content.}
+
+\subsection{Synchronization with Timeline Semaphores}
+\textit{Stub content.}
+
+\subsection{USM and Buffer Device Address Integration}
+\textit{Stub content.}
+
+\section{Compiler Pipeline for Vulkan SPIR-V}
+\subsection{SSCP Flow and clspv Integration}
+\textit{Stub content.}
+
+\subsection{LLVM IR Transformations for Address Spaces}
+\textit{Stub content.}
+
+\subsection{Required SPIR-V Capabilities and Constraints}
+\textit{Stub content.}
+
+\section{Experimental Setup}
+\subsection{Hardware and Software Platforms}
+\textit{Stub content.}
+
+\subsection{Android Cross-Compilation Workflow}
+\textit{Stub content.}
+
+\subsection{Benchmarks and Measurement Methodology}
+\textit{Stub content.}
+
+\section{Results}
+\subsection{End-to-End Functionality on Android}
+\textit{Stub content.}
+
+\subsection{Performance Comparison Across Execution Modes}
+\textit{Stub content.}
+
+\subsection{Analysis of Observed Speedups}
+\textit{Stub content.}
+
+\section{Discussion}
+\subsection{Limitations and Current Gaps}
+\textit{Stub content.}
+
+\subsection{Implications for Portable GPU Computing}
+\textit{Stub content.}
+
+\section{Threats to Validity}
+\subsection{Benchmark and Device Representativeness}
+\textit{Stub content.}
+
+\subsection{Measurement and Toolchain Biases}
+\textit{Stub content.}
+
+\section{Conclusion and Future Work}
+\subsection{Summary}
+\textit{Stub content.}
+
+\subsection{Roadmap}
+\textit{Stub content.}
+
+\begin{acks}
+% Stub: Acknowledge contributors/funding if applicable.
+\textit{Stub acknowledgments.}
+\end{acks}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}
